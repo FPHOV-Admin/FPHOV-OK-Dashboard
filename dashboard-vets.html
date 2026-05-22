@@ -354,8 +354,9 @@
         function populateDropdowns() {
             const yearList = document.getElementById('list-year');
             yearList.innerHTML = '';
-            uniqueYears.sort((a,b) => a - b);
-            uniqueYears.forEach(year => yearList.appendChild(createCheckbox('year', year, year)));
+            // Sort numbers correctly, then convert them to strings for the UI components
+            uniqueYears.sort((a, b) => a - b);
+            uniqueYears.forEach(year => yearList.appendChild(createCheckbox('year', year.toString(), year.toString())));
 
             const eraList = document.getElementById('list-era');
             eraList.innerHTML = '';
@@ -374,7 +375,8 @@
             let btnTextId;
             let defaultText;
 
-            if (type === 'year') { filterSet = activeFilters.years; btnTextId = 'btn-text-year'; defaultText = 'All Years'; value = parseInt(value); }
+            // Keep everything inside the filter sets as Strings to prevent type mismatches
+            if (type === 'year') { filterSet = activeFilters.years; btnTextId = 'btn-text-year'; defaultText = 'All Years'; value = value.toString(); }
             if (type === 'era') { filterSet = activeFilters.eras; btnTextId = 'btn-text-era'; defaultText = 'All Service Eras'; }
             if (type === 'age') { filterSet = activeFilters.ages; btnTextId = 'btn-text-age'; defaultText = 'All Ages'; }
 
