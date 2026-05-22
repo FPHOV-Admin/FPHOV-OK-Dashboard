@@ -598,7 +598,7 @@
                 }
                 
                 if (activeFilters.years.size > 0) {
-                    if (!vet.nominationYear || !activeFilters.years.has(vet.nominationYear)) return false;
+                    if (!vet.nominationYear || !activeFilters.years.has(vet.nominationYear.toString())) return false;
                 }
                 if (activeFilters.eras.size > 0) {
                     if (!vet.era || !activeFilters.eras.has(vet.era)) return false;
