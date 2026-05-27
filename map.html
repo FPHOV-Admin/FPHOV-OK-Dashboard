@@ -4,23 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FPHOV - Veteran Map</title>
-    
+   
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            background-color: #111827; 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #111827;
             background-image: url('bandit-background.jpg');
             background-size: cover; background-position: center; background-attachment: fixed; background-repeat: no-repeat;
-            color: #f3f4f6; overflow-x: hidden; position: relative; 
+            color: #f3f4f6; overflow-x: hidden; position: relative;
             min-height: 100vh;
-            /* Prevent bouncing on iOS */
             overscroll-behavior: none;
         }
         body::before {
@@ -29,7 +27,6 @@
         }
         body.light-mode { color: #111827; }
         body.light-mode::before { background-color: rgba(243, 244, 246, 0.85); }
-
         .header { background: linear-gradient(to right, #991b1b, #ffffff, #1e3a8a); padding: 2px; }
         .header-content { background: #1f2937; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
         body.light-mode .header-content { background: white; }
@@ -38,15 +35,17 @@
         h1 { font-size: 1.875rem; font-weight: bold; }
         .subtitle { color: #9ca3af; font-size: 0.875rem; }
         body.light-mode .subtitle { color: #6b7280; }
-
         .controls { display: flex; gap: 1rem; align-items: center; }
         .mode-toggle { background: #374151; border: 1px solid #4b5563; padding: 0.5rem; border-radius: 0.5rem; cursor: pointer; color: #f3f4f6; }
         body.light-mode .mode-toggle { background: white; border-color: #d1d5db; color: #111827; }
-        .nav-button { background: #1e40af; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none; font-weight: 500; }
+        .nav-button { background: #1e40af; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 0.35rem; }
         .nav-button:hover { background: #1e3a8a; }
+        .btn-help-nav { background: #4b5563; border: 1px solid #6b7280; cursor: pointer; }
+        .btn-help-nav:hover { background: #374151; }
+        body.light-mode .btn-help-nav { background: #e5e7eb; border-color: #d1d5db; color: #111827; }
+        body.light-mode .btn-help-nav:hover { background: #d1d5db; }
 
         .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; transition: margin-right 0.3s ease; padding-bottom: 120px; }
-
         .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
         .stat-card { background: rgba(31, 41, 55, 0.95); border: 1px solid #374151; padding: 1rem; border-radius: 0.5rem; }
         body.light-mode .stat-card { background: rgba(255, 255, 255, 0.95); border-color: #e5e7eb; }
@@ -54,16 +53,14 @@
         body.light-mode .stat-label { color: #6b7280; }
         .stat-value { font-size: 1.5rem; font-weight: bold; margin-top: 0.5rem; }
         .stat-link { font-size: 0.875rem; color: #3b82f6; cursor: pointer; text-decoration: underline; margin-top: 0.5rem; display: block; }
-
         .filters { background: rgba(31, 41, 55, 0.95); border: 1px solid #374151; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem; }
         body.light-mode .filters { background: rgba(255, 255, 255, 0.95); border-color: #e5e7eb; }
         .search-box { width: 100%; padding: 0.75rem; border: 1px solid #374151; border-radius: 0.5rem; background: #374151; color: #f3f4f6; margin-bottom: 1rem; font-size: 1rem; }
         body.light-mode .search-box { background: white; border-color: #d1d5db; color: #111827; }
-        
+       
         .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
         .filter-label { font-size: 0.875rem; font-weight: 600; color: #9ca3af; display: block; margin-bottom: 0.25rem; }
         body.light-mode .filter-label { color: #6b7280; }
-
         .custom-dropdown { position: relative; width: 100%; }
         .dropdown-btn {
             background: #374151; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #4b5563;
@@ -86,21 +83,19 @@
         .dropdown-item:hover { background: rgba(255,255,255,0.1); }
         body.light-mode .dropdown-item:hover { background: rgba(0,0,0,0.05); }
         .dropdown-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #2563eb; cursor: pointer; }
-
+        
         #map { height: 600px; border-radius: 0.5rem; border: 2px solid #374151; z-index: 1; }
         body.light-mode #map { border-color: #d1d5db; }
         .leaflet-popup-content-wrapper { background: #1f2937; color: #f3f4f6; }
         body.light-mode .leaflet-popup-content-wrapper { background: white; color: #111827; }
-        
+       
         .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 600; margin-top: 0.25rem; }
         .badge-branch { background: #dbeafe; color: #1e40af; }
         .badge-surprise { background: #fef3c7; color: #92400e; }
 
-        /* --- Sidebar & Mobile Review Button --- */
         .sidebar {
-            position: fixed; top: 0; right: -400px; width: 350px; 
-            /* Fix for mobile browser bars */
-            height: 100vh; height: 100dvh; 
+            position: fixed; top: 0; right: -400px; width: 350px;
+            height: 100vh; height: 100dvh;
             background: rgba(31, 41, 55, 0.98); border-left: 1px solid #374151;
             z-index: 1500; transition: right 0.3s ease;
             display: flex; flex-direction: column;
@@ -108,63 +103,56 @@
         }
         body.light-mode .sidebar { background: rgba(255, 255, 255, 0.98); border-color: #e5e7eb; box-shadow: -5px 0 15px rgba(0,0,0,0.1); }
         .sidebar.active { right: 0; }
-        
+       
         @media (max-width: 768px) {
             .sidebar { width: 100%; right: -100%; }
             .sidebar.active { right: 0; }
         }
-
         .sidebar-header { padding: 1.5rem; border-bottom: 1px solid #374151; display: flex; justify-content: space-between; align-items: center; }
         body.light-mode .sidebar-header { border-color: #e5e7eb; }
         .sidebar-close { cursor: pointer; font-size: 1.5rem; font-weight: bold; padding: 0.5rem; }
-        
+       
         .sidebar-content { flex: 1; overflow-y: auto; padding: 1rem; }
-        .selected-item { 
-            background: #374151; padding: 0.75rem; margin-bottom: 0.5rem; 
+        .selected-item {
+            background: #374151; padding: 0.75rem; margin-bottom: 0.5rem;
             border-radius: 0.5rem; display: flex; justify-content: space-between; align-items: flex-start;
         }
         body.light-mode .selected-item { background: #f3f4f6; border: 1px solid #e5e7eb; }
         .remove-btn { color: #dc2626; cursor: pointer; padding: 0 0.5rem; font-weight: bold; font-size: 1.2rem; }
-        
-        .sidebar-footer { 
-            padding: 1.5rem; border-top: 1px solid #374151; 
-            /* Ensure buttons aren't hidden by mobile home bar */
+       
+        .sidebar-footer {
+            padding: 1.5rem; border-top: 1px solid #374151;
             padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
         }
         body.light-mode .sidebar-footer { border-color: #e5e7eb; }
-        
+       
         .btn-action { width: 100%; padding: 0.75rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; border: none; margin-bottom: 0.5rem; }
         .btn-export { background: #16a34a; color: white; }
         .btn-clear { background: #dc2626; color: white; }
-
         .floating-controls {
-            position: fixed; 
-            /* Raise above safe area */
-            bottom: calc(20px + env(safe-area-inset-bottom)); 
+            position: fixed;
+            bottom: calc(20px + env(safe-area-inset-bottom));
             left: 50%; transform: translateX(-50%);
             z-index: 1400;
         }
-        .btn-select-mode { 
-            background: #374151; color: white; padding: 0.75rem 1.5rem; 
+        .btn-select-mode {
+            background: #374151; color: white; padding: 0.75rem 1.5rem;
             border-radius: 2rem; border: 1px solid #4b5563; font-weight: bold;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer;
         }
         .btn-select-mode.active { background: #d97706; border-color: #f59e0b; }
-
         .btn-review-fab {
-            position: fixed; 
-            /* Fix for mobile cutoff */
-            bottom: calc(30px + env(safe-area-inset-bottom)); 
+            position: fixed;
+            bottom: calc(30px + env(safe-area-inset-bottom));
             right: 20px;
             background: #2563eb; color: white;
             padding: 1rem 1.5rem; border-radius: 2rem;
-            font-weight: bold; border: none; 
+            font-weight: bold; border: none;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             z-index: 1400; cursor: pointer;
             display: none;
         }
         .btn-review-fab:hover { background: #1d4ed8; }
-
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.7); z-index: 2000; align-items: center; justify-content: center;
@@ -180,14 +168,51 @@
         .modal-close { cursor: pointer; font-size: 1.5rem; }
         .unmapped-item { padding: 0.75rem; border-bottom: 1px solid #374151; }
         .unmapped-item:last-child { border-bottom: none; }
-
         .marker-default { background: #dc2626; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
         .marker-selected { background: #fbbf24; width: 28px; height: 28px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px #fbbf24; transform: scale(1.1); }
-
         .loading { text-align: center; padding: 3rem; }
         .flag-svg { width: 64px; height: 64px; margin: 0 auto 1rem; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .no-results { text-align: center; padding: 3rem; color: #9ca3af; display: none; }
+
+        /* Help Sidebar Styles */
+        .help-sidebar { width: 380px; z-index: 1600; }
+        .help-section-title { 
+            font-size: 0.85rem; font-weight: 700; color: #3b82f6; 
+            text-transform: uppercase; letter-spacing: 0.05em; margin: 1.25rem 0 0.5rem 0; 
+        }
+        .help-list { list-style: none; padding-left: 0; }
+        .help-list li { 
+            font-size: 0.875rem; margin-bottom: 0.75rem; line-height: 1.4; 
+            color: #d1d5db; position: relative; padding-left: 1.25rem; 
+        }
+        body.light-mode .help-list li { color: #4b5563; }
+        .help-list li::before { 
+            content: "•"; color: #ef4444; font-weight: bold; 
+            position: absolute; left: 0; top: 0; font-size: 1.1rem; 
+        }
+        .help-faq-item { 
+            border: 1px solid #374151; border-radius: 0.375rem; 
+            margin-bottom: 0.5rem; overflow: hidden; 
+        }
+        body.light-mode .help-faq-item { border-color: #e5e7eb; }
+        .help-faq-trigger { 
+            width: 100%; text-align: left; padding: 0.75rem; 
+            background: #1f2937; border: none; color: #f3f4f6; 
+            font-size: 0.875rem; font-weight: 600; cursor: pointer; 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
+        body.light-mode .help-faq-trigger { background: #f9fafb; color: #111827; }
+        .help-faq-trigger:hover { background: #2d3748; }
+        body.light-mode .help-faq-trigger:hover { background: #f3f4f6; }
+        .help-faq-content { 
+            padding: 0.75rem; font-size: 0.85rem; color: #9ca3af; 
+            border-top: 1px solid #374151; background: #111827; 
+            display: none; line-height: 1.4; 
+        }
+        body.light-mode .help-faq-content { 
+            color: #4b5563; border-top-color: #e5e7eb; background: #ffffff; 
+        }
     </style>
 </head>
 <body>
@@ -201,6 +226,7 @@
                 </div>
             </div>
             <div class="controls">
+                <button class="nav-button btn-help-nav" onclick="openHelpSidebar()">❓ Help & FAQ</button>
                 <button class="mode-toggle" onclick="toggleDarkMode()">
                     <svg id="moon-icon" width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
@@ -225,10 +251,9 @@
                 <a class="stat-link" onclick="openUnmappedModal()">View Unmapped Veterans</a>
             </div>
         </div>
-
         <div class="filters">
             <input type="text" id="search" class="search-box" placeholder="Search by name, address, city, notes...">
-            
+           
             <div class="filter-grid">
                 <div>
                     <label class="filter-label">Nomination Year</label>
@@ -240,7 +265,6 @@
                         <div class="dropdown-content" id="list-year"></div>
                     </div>
                 </div>
-
                 <div>
                     <label class="filter-label">Service Era</label>
                     <div class="custom-dropdown" id="dd-era">
@@ -251,7 +275,6 @@
                         <div class="dropdown-content" id="list-era"></div>
                     </div>
                 </div>
-
                 <div>
                     <label class="filter-label">Age Group</label>
                     <div class="custom-dropdown" id="dd-age">
@@ -264,19 +287,16 @@
                 </div>
             </div>
         </div>
-
         <div id="loading" class="loading">
             <img src="fphov-logo.png" alt="FPHOV Logo" class="flag-svg" style="object-fit: contain;">
             <p style="font-size: 1.25rem;">Loading veteran locations...</p>
         </div>
-
         <div id="map" style="display: none;"></div>
     </div>
 
     <div class="floating-controls">
         <button id="btnSelectMode" class="btn-select-mode" onclick="toggleSelectionMode()">Select Mode: OFF</button>
     </div>
-
     <button id="btnReview" class="btn-review-fab" onclick="openSidebar()">
         Review (<span id="fabCount">0</span>)
     </button>
@@ -296,6 +316,45 @@
         </div>
     </div>
 
+    <div id="helpSidebar" class="sidebar help-sidebar">
+        <div class="sidebar-header">
+            <div>
+                <h3>How-To & FAQ</h3>
+                <p style="font-size: 0.8rem; color: #9ca3af; margin-top: 5px;">Map View Instructions</p>
+            </div>
+            <span class="sidebar-close" onclick="closeHelpSidebar()">&times;</span>
+        </div>
+        <div class="sidebar-content">
+            <div class="help-section-title">🗺️ How to Use the Map</div>
+            <ul class="help-list">
+                <li>Click red markers to view veteran details and nomination timelines.</li>
+                <li>Turn on "Select Mode" to select multiple veterans by tapping markers sequentially.</li>
+                <li>Use search and filters to narrow down visible markers contextually.</li>
+                <li>Selected veterans can be compiled and exported via the Review button layout.</li>
+            </ul>
+
+            <div class="help-section-title">❓ FAQ</div>
+            
+            <div class="help-faq-item">
+                <button class="help-faq-trigger" onclick="toggleFaq(this)">
+                    <span>Why don't some veterans appear on the map?</span><span>▶</span>
+                </button>
+                <div class="help-faq-content">
+                    They are missing valid GPS coordinates. Use the "View Unmapped Veterans" link at the top left to verify their profiles.
+                </div>
+            </div>
+
+            <div class="help-faq-item">
+                <button class="help-faq-trigger" onclick="toggleFaq(this)">
+                    <span>How do I select veterans for export?</span><span>▶</span>
+                </button>
+                <div class="help-faq-content">
+                    Enable Select Mode at the bottom of the screen, tap your target pins, then click the blue Review button at the bottom right.
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="unmappedModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -308,13 +367,13 @@
 
     <script>
         const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSI7gRLdABZx7uGwBco1KH6_1MfXrOG8jHp3HZfr_3XFRF2z14dbj6WfR7tlu9gWE3t27938qZxT-a0/pub?output=csv&single=true&gid=1848702233';
-        
+       
         let map;
         let markers = [];
         let allVeterans = [];
         let markersLayer;
         let unmappedVeterans = [];
-        
+       
         let uniqueYears = [];
         let uniqueEras = [];
         let activeFilters = { years: new Set(), eras: new Set(), ages: new Set() };
@@ -334,7 +393,31 @@
             }
         }
 
-        // --- Custom Dropdown Logic ---
+        /* ====================== HELP FUNCTIONS ====================== */
+        function openHelpSidebar() {
+            closeSidebar();
+            document.getElementById('helpSidebar').classList.add('active');
+        }
+        
+        function closeHelpSidebar() {
+            document.getElementById('helpSidebar').classList.remove('active');
+        }
+
+        function toggleFaq(buttonElement) {
+            const content = buttonElement.nextElementSibling;
+            const indicator = buttonElement.querySelector('span:last-child');
+            const isVisible = content.style.display === 'block';
+            
+            document.querySelectorAll('.help-faq-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.help-faq-trigger span:last-child').forEach(el => el.textContent = '▶');
+            
+            if (!isVisible) {
+                content.style.display = 'block';
+                indicator.textContent = '▼';
+            }
+        }
+
+        /* ====================== ORIGINAL MAPPING LOGIC RECONCILED ====================== */
         function toggleDropdown(type) {
             const allDropdowns = document.querySelectorAll('.dropdown-content');
             const current = document.getElementById(`list-${type}`);
@@ -345,7 +428,7 @@
         window.onclick = function(event) {
             const modal = document.getElementById('unmappedModal');
             if (event.target == modal) modal.style.display = "none";
-            if (!event.target.matches('.dropdown-btn') && !event.target.matches('.dropdown-btn *')) {
+            if (!event.target.matches('.dropdown-btn') && !event.target.matches('.dropdown-btn *') && !event.target.matches('.btn-help-nav')) {
                 if (!event.target.closest('.dropdown-content')) {
                     document.querySelectorAll('.dropdown-content').forEach(dd => dd.classList.remove('show'));
                 }
@@ -371,12 +454,12 @@
             yearList.innerHTML = '';
             uniqueYears.sort((a,b) => a - b);
             uniqueYears.forEach(year => yearList.appendChild(createCheckbox('year', year, year)));
-
+            
             const eraList = document.getElementById('list-era');
             eraList.innerHTML = '';
             uniqueEras.sort();
             uniqueEras.forEach(era => eraList.appendChild(createCheckbox('era', era, era)));
-
+            
             const ageList = document.getElementById('list-age');
             ageList.innerHTML = '';
             const ageBuckets = ['90+', '80-89', '70-79', '60-69', '50-59', '40-49', '20-39'];
@@ -388,22 +471,17 @@
             let filterSet;
             let btnTextId;
             let defaultText;
-
-            // Force strict string tracking to ensure seamless Set lookups
             if (type === 'year') { filterSet = activeFilters.years; btnTextId = 'btn-text-year'; defaultText = 'All Years'; value = value.toString(); }
             if (type === 'era') { filterSet = activeFilters.eras; btnTextId = 'btn-text-era'; defaultText = 'All Service Eras'; }
             if (type === 'age') { filterSet = activeFilters.ages; btnTextId = 'btn-text-age'; defaultText = 'All Ages'; }
-
             if (checkbox.checked) filterSet.add(value);
             else filterSet.delete(value);
-
             const btnText = document.getElementById(btnTextId);
             if (filterSet.size === 0) btnText.textContent = defaultText;
             else if (filterSet.size === 1) {
                 btnText.textContent = `${filterSet.size} Selected`;
                 if(type === 'year' || type === 'era') btnText.textContent = Array.from(filterSet)[0];
             } else btnText.textContent = `${filterSet.size} Selected`;
-
             filterVeterans();
         }
 
@@ -411,11 +489,10 @@
             isSelectionMode = !isSelectionMode;
             const btn = document.getElementById('btnSelectMode');
             const sidebar = document.getElementById('sidebar');
-            
+           
             if (isSelectionMode) {
                 btn.classList.add('active');
                 btn.textContent = "Select Mode: ON";
-                // Only auto-open sidebar if deskop and items selected
                 if (selectedVeterans.size > 0 && window.innerWidth > 768) sidebar.classList.add('active');
             } else {
                 btn.classList.remove('active');
@@ -428,7 +505,7 @@
             if (selectedVeterans.has(vetId)) selectedVeterans.delete(vetId);
             else selectedVeterans.add(vetId);
             updateSelectionUI();
-            filterVeterans(false); 
+            filterVeterans(false);
         }
 
         function clearSelection() {
@@ -438,9 +515,10 @@
         }
 
         function openSidebar() {
+            closeHelpSidebar();
             document.getElementById('sidebar').classList.add('active');
         }
-
+        
         function closeSidebar() {
             document.getElementById('sidebar').classList.remove('active');
         }
@@ -449,20 +527,19 @@
             const count = selectedVeterans.size;
             document.getElementById('sidebarCount').textContent = count;
             document.getElementById('fabCount').textContent = count;
-            
+           
             const sidebar = document.getElementById('sidebar');
             const sidebarList = document.getElementById('sidebarList');
             const fab = document.getElementById('btnReview');
-
             sidebarList.innerHTML = '';
-            
+           
             if (count > 0) {
                 fab.style.display = 'block';
                 if (window.innerWidth > 768) {
                     sidebar.classList.add('active');
                     fab.style.display = 'none';
                 }
-                
+               
                 const selectedData = allVeterans.filter(v => selectedVeterans.has(v.id));
                 selectedData.forEach(vet => {
                     const div = document.createElement('div');
@@ -486,14 +563,12 @@
             if (selectedVeterans.size === 0) return;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
-
             doc.setFontSize(14);
             doc.text("FPHOV - Veteran Installation List", 14, 15);
             doc.setFontSize(10);
             doc.text(`Generated: ${new Date().toLocaleDateString()} | Total: ${selectedVeterans.size}`, 14, 22);
-
             const selectedData = allVeterans.filter(v => selectedVeterans.has(v.id));
-            
+           
             const tableBody = selectedData.map(v => {
                 const fullAddress = `${v.address}\n${v.city}, OK ${v.zip}`;
                 let contactInfo = '';
@@ -501,13 +576,11 @@
                 if (v.contact2) contactInfo += `${v.contact2Name || 'S'}: ${v.contact2}\n`;
                 if (v.email) contactInfo += `E: ${v.email}`;
                 const serviceInfo = `${v.branch}\n${v.era}\nAge: ${v.age}`;
-
                 return [
                     v.dateReceived, v.name, fullAddress, contactInfo, serviceInfo,
                     v.nominatedBy || '-', v.surprise || '-', v.notes || '-'
                 ];
             });
-
             doc.autoTable({
                 head: [['Date', 'Name', 'Address', 'Contact Info', 'Service', 'Nominated By', 'Surprise', 'Notes']],
                 body: tableBody,
@@ -518,9 +591,8 @@
                     3: { cellWidth: 50 }, 4: { cellWidth: 25 }, 5: { cellWidth: 25 }, 6: { cellWidth: 15 }, 7: { cellWidth: 'auto' }
                 },
                 theme: 'grid',
-                headStyles: { fillColor: [30, 64, 175], textColor: 255 } 
+                headStyles: { fillColor: [30, 64, 175], textColor: 255 }
             });
-
             doc.save('veteran_install_list.pdf');
         }
 
@@ -544,10 +616,11 @@
             }
             document.getElementById('unmappedModal').style.display = 'flex';
         }
-
+        
         function closeUnmappedModal() { document.getElementById('unmappedModal').style.display = 'none'; }
 
         function initMap() {
+            if (map) return; // Prevent re-initializing leaflet errors
             map = L.map('map').setView([35.5, -97.5], 7);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
@@ -565,10 +638,12 @@
             return [lat, lng];
         }
 
+        /* Feature Added: Nomination Date added inside the map metadata popups directly */
         function createPopupContent(vet) {
             return `
                 <div class="popup-content">
                     <div class="popup-name">${vet.name}</div>
+                    <div class="popup-field" style="margin-bottom: 0.35rem; font-style: italic; color:#9ca3af;"><span class="popup-label">Date Nominated:</span> ${vet.dateReceived || 'N/A'}</div>
                     <div class="popup-field"><span class="popup-label">Address:</span> ${vet.address}</div>
                     <div class="popup-field"><span class="popup-label">City:</span> ${vet.city}, OK ${vet.zip}</div>
                     ${vet.contact1 ? `<div class="popup-field"><span class="popup-label">${vet.contact1Name || 'Contact 1'}:</span> <a href="tel:${vet.contact1}" style="color:#3b82f6">${vet.contact1}</a></div>` : ''}
@@ -583,6 +658,7 @@
         }
 
         function updateMap(filteredVets) {
+            if (!markersLayer) return;
             markersLayer.clearLayers();
             markers = [];
             filteredVets.forEach(vet => {
@@ -607,15 +683,14 @@
 
         function filterVeterans(shouldUpdateMap = true) {
             const searchTerm = document.getElementById('search').value.toLowerCase();
-            
+           
             let filtered = allVeterans.filter(vet => {
                 if (!parseGPS(vet)) return false;
-
                 if (searchTerm) {
                     const searchStr = `${vet.name} ${vet.address} ${vet.city} ${vet.notes}`.toLowerCase();
                     if (!searchStr.includes(searchTerm)) return false;
                 }
-                
+               
                 if (activeFilters.years.size > 0) {
                     if (!vet.nominationYear || !activeFilters.years.has(vet.nominationYear.toString())) return false;
                 }
@@ -637,9 +712,8 @@
                 }
                 return true;
             });
-            
+           
             if (shouldUpdateMap) updateMap(filtered);
-            else updateMap(filtered);
         }
 
         function loadVeterans() {
@@ -649,22 +723,19 @@
                 complete: function(results) {
                     let tempYears = new Set();
                     let tempEras = new Set();
-
                     allVeterans = results.data.map((row, idx) => {
                         if (!row['Veteran']) return null;
-                        
+                       
                         let year = null;
                         if (row['Date Nominated']) {
                             const d = new Date(row['Date Nominated']);
-                            if (!isNaN(d)) { 
-                                // Keep it as a string to match the updated dropdown lookups
-                                year = d.getFullYear().toString(); 
+                            if (!isNaN(d)) {
+                                year = d.getFullYear().toString();
                                 tempYears.add(year);
                             }
                         }
-                        
+                       
                         if (row['DATES OR ERA OF SERVICE']) tempEras.add(row['DATES OR ERA OF SERVICE']);
-
                         return {
                             id: idx,
                             dateReceived: row['Date Nominated'] || '',
@@ -680,25 +751,25 @@
                             surprise: row['SURPRISE Y/N'] || '', nominatedBy: row['Nominated by'] || '', notes: row['Notes'] || ''
                         };
                     }).filter(v => v !== null);
-                    
+                   
                     uniqueYears = Array.from(tempYears);
                     uniqueEras = Array.from(tempEras).filter(Boolean);
                     populateDropdowns();
-
+                    
                     let mappedCount = 0;
                     unmappedVeterans = [];
                     allVeterans.forEach(vet => {
                         if (parseGPS(vet)) mappedCount++;
                         else unmappedVeterans.push(vet);
                     });
-
                     document.getElementById('totalCount').textContent = allVeterans.length;
                     document.getElementById('mappedCount').textContent = mappedCount;
-                    
+                   
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('map').style.display = 'block';
+                    
                     initMap();
-                    filterVeterans(); 
+                    filterVeterans();
                 }
             });
         }
