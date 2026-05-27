@@ -1,0 +1,7 @@
+name = "fphov-dashboard"
+compatibility_date = "2026-05-27"
+pages_build_output_dir = "."
+
+[[kv_namespaces]]
+binding = "FPHOV_AUTH"
+id = "1cbc13719f444bcb83975b12301e3d7e"
